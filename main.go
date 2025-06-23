@@ -2,20 +2,27 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"math/rand"
 	"time"
 )
 
+type ColorInfo struct {
+	R, G, B int
+}
+
 func main() {
+	r, g, b := paletteGenerator()
+	paletteRule(r, g, b)
+}
 
-	screenDrawer()
-
-	paletteRule(paletteGenerator())
-
-	color.BgRGB(paletteGenerator()).Println("            ")
-
-	paletteRGB()
+func clamp(x int) int {
+	if x < 0 {
+		return 0
+	}
+	if x > 255 {
+		return 255
+	}
+	return x
 }
 
 func paletteGenerator() (r, g, b int) {
@@ -26,42 +33,29 @@ func paletteGenerator() (r, g, b int) {
 	g = rand.Intn(255) + 1
 	b = rand.Intn(255) + 1
 
-	return r, g, b
+	return
 }
 
-// генерит доп цвета по правилу пятиугольника
-func paletteRule(r, g, d int) {
+func paletteRule(r, g, b int) {
 
-	pentaColorArray := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
-	fmt.Println(pentaColorArray)
+	colors := []ColorInfo{{r, g, b}}
 
+	for i := 1; i < 5; i++ {
+		offset := i * 51
+		colors = append(colors, ColorInfo{
+			clamp((r + offset) % 256),
+			clamp((g + offset) % 256),
+			clamp((b + offset) % 256),
+		})
+	}
+	for _, c := range colors {
+		printColorLine(c)
+	}
 }
 
-// берет инфу из правила и составляет палитру
-func paletteRGB() {
-
-	color.BgRGB(255, 128, 0).Println("            ", testRgbToHex)
-	color.BgRGB(230, 42, 42).Println("            ", testRgbToHex)
-}
-
-// ргб в хекс код
-func hexCode() string {
-
-	hex := ""
-
-	return hex
-}
-
-// Draw the TUI
-func screenDrawer() {
-
-	fmt.Println("Welcome to GoWall!")
-}
-
-// ==============TEST==================================================
-func testRgbToHex() {
-	r := 255
-	g := 0
-	b := 212
-	fmt.Printf("#%02x%02x%02x", r, g, b)
+func printColorLine(c ColorInfo) {
+	fmt.Printf("\x1b[48;2;%d;%d;%dm", c.R, c.G, c.B)
+	fmt.Print("            ")
+	fmt.Print("\x1b[0m")
+	fmt.Printf("  | RGB - [ %3d, %3d, %3d ] | HEX - [#%02X%02X%02X]\n", c.R, c.G, c.B, c.R, c.G, c.B)
 }
