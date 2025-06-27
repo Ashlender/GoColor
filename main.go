@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"math"
@@ -14,13 +15,33 @@ type ColorInfo struct {
 	R, G, B int
 }
 
+type ConfigPalette struct {
+	Name   string   `json:"name"`
+	Colors [][3]int `json:"colors"`
+}
+
 func main() {
 	var count int
 	var mode string
+	var conf string
 
 	flag.IntVar(&count, "count", 3, "Количество цветов в палитре (2–5)")
 	flag.StringVar(&mode, "mode", "rgb", "Режим генерации: rgb или hsv")
+	flag.StringVar(&conf, "conf", "", "Имя палитры из palettes.json (заменяет mode/count)")
 	flag.Parse()
+
+	if conf != "" {
+		colors, err := loadPaletteFromJSON("palettes.json", conf)
+		if err != nil {
+			fmt.Println("Ошибка:", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Loaded palette: %s\n", conf)
+		for _, c := range colors {
+			printColorLine(c)
+		}
+		return
+	}
 
 	if count < 2 || count > 5 {
 		fmt.Println("Ошибка: поддерживаются только значения count от 2 до 5")
@@ -46,6 +67,33 @@ func main() {
 	for _, c := range colors {
 		printColorLine(c)
 	}
+}
+
+func loadPaletteFromJSON(filename, targetName string) ([]ColorInfo, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("не удалось прочитать %s: %v", filename, err)
+	}
+
+	var palettes []ConfigPalette
+	if err := json.Unmarshal(data, &palettes); err != nil {
+		return nil, fmt.Errorf("ошибка парсинга JSON: %v", err)
+	}
+
+	for _, p := range palettes {
+		if strings.EqualFold(p.Name, targetName) {
+			var result []ColorInfo
+			for _, c := range p.Colors {
+				if len(c) != 3 {
+					continue
+				}
+				result = append(result, ColorInfo{c[0], c[1], c[2]})
+			}
+			return result, nil
+		}
+	}
+
+	return nil, fmt.Errorf("палитра '%s' не найдена", targetName)
 }
 
 func paletteGenerator() (r, g, b int) {
