@@ -33,10 +33,9 @@ func main() {
 	if conf != "" {
 		colors, err := loadPaletteFromJSON("palettes.json", conf)
 		if err != nil {
-			fmt.Println("Ошибка:", err)
+			fmt.Println("Error:", err)
 			os.Exit(1)
 		}
-		fmt.Printf("Loaded palette: %s\n", conf)
 		for _, c := range colors {
 			printColorLine(c)
 		}
@@ -63,7 +62,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Generated palette:")
 	for _, c := range colors {
 		printColorLine(c)
 	}
@@ -182,8 +180,10 @@ func HSVtoRGB(h, s, v float64) (int, int, int) {
 
 func printColorLine(c ColorInfo) {
 	fmt.Printf("\x1b[48;2;%d;%d;%dm", c.R, c.G, c.B)
-	fmt.Print("        ")
+	fmt.Print("                ")
 	fmt.Print("\x1b[0m")
 	fmt.Printf("  | RGB - [ %3d, %3d, %3d ] | HEX - [#%02X%02X%02X]\n",
 		c.R, c.G, c.B, c.R, c.G, c.B)
 }
+
+//TODO fix HSV generation
