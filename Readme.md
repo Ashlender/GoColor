@@ -49,4 +49,19 @@
 
 //TODO fix HSV (Dont commit readme)
 
-![img.png](img.png)
+![img.png](picture/img3.png)
+
+
+
+GoWall/
+├── cmd/
+│   └── palettegen/
+│       ├── main.go
+│       └── palettes.json
+├── picture/
+├── pkg/
+│   ├── color.go
+│   ├── config.go
+│   └── html.go
+├── go.mod
+└── Readme.md
