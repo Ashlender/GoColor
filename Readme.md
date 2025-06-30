@@ -1,40 +1,29 @@
-# Go Color Palette Generator
+# Terminal color palette generator.
 
 ---
-![img_1.png](picture/img_1.png)
+![img.png](picture/img.png)
 
-**Go Color Palette Generator** — простой терминальный генератор цветовых палитр на языке Go.
-На основе случайно сгенерированного базового цвета программа подбирает 4 дополнительных цвета по принципу равномерного распределения оттенков (по «правилу пятиугольника») и выводит их с визуальным отображением в терминале.
-
-### Особенности:
-
-* Генерация 5 гармоничных цветов на основе одного RGB-цвета.
-* Вывод цветных блоков с кодами RGB и HEX.
-* Лёгкая реализация без внешних зависимостей, только стандартная библиотека Go.
-* Использование ANSI escape-последовательностей для цветного вывода.
-
-### Использование:
-
-1. Запуск программы выводит палитру из 5 цветов.
-2. Каждый цвет представлен цветным блоком и описанием в формате RGB и HEX.
-
+---
 
 ### Flags:
 
- --conf [solarized] 
+| Flag    | Description                                     | Example              |
+|---------|-------------------------------------------------|----------------------|
+| -html   | name of HTML file to output the palette         | -html "palette.html" |
+| -base   | base color in R,G,B format for [rgb] mode       | -base "60,90,120"    |
+| -conf   | palette name from palettes.json                 | -conf solarized      |
+| -mode   | generation mode, standard mode [rgb]: [rgb/hsv] | -mode hsv            |
+| -count  | colors in the palette [2–5]                     | -count 5             |
 
- -- rgb [asdf]
-
-
+### Usage:
 ```
-GoWall/
-├── cmd/
-│    └── palettegen/
-│         ├── main.go
-│         └── palettes.json
-├── pkg/
-│    ├── color.go
-│    ├── config.go
-│    └── html.go
-└── go.mod
+git clone https://github.com/username/gowall.git
+cd gowall
+go build -o gowall ./cmd/palettegen
+
+./gowall -count 5
+./gowall -mode hsv -count 3
+./gowall -base "60,90,120"
+./gowall -conf solarized
+./gowall -html "palette.html"
 ```

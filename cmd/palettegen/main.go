@@ -19,7 +19,7 @@ func main() {
 
 	flag.IntVar(&count, "count", 3, " --colors in the palette [2–5]")
 	flag.StringVar(&mode, "mode", "rgb", " --generation mode (standard mode == rgb): [rgb/hsv]")
-	flag.StringVar(&conf, "conf", "", " --palette name from palettes.json [replaces mode/count]")
+	flag.StringVar(&conf, "conf", "", " --palette name from palettes.json")
 	flag.StringVar(&baseColor, "base", "", " --base color in R,G,B format for [rgb] mode")
 	flag.StringVar(&htmlOut, "html", "", " --name of HTML file to output the palette")
 	flag.Parse()
