@@ -9,29 +9,28 @@ import (
 )
 
 func TestMainFunctionality(t *testing.T) {
-	// Тестовые входные данные
+	// Test input data
 	r, g, b := 100, 150, 200
 	numColors := 4
 	outputFile := "test_output.html"
 
-	// Генерация палитры
+	// Generating a palette
 	colors := pkg.PaletteRuleRGB(r, g, b, numColors)
 	if len(colors) != numColors {
 		t.Fatalf("ожидалось %d цветов, получено %d", numColors, len(colors))
 	}
 
-	// Сохранение HTML
+	// Saving HTML config
 	err := pkg.SavePaletteToHTML(outputFile, colors)
 	if err != nil {
 		t.Fatalf("ошибка при сохранении HTML: %v", err)
 	}
 
-	// Проверка существования файла
+	// Checking file existence
 	if _, err := os.Stat(outputFile); os.IsNotExist(err) {
 		t.Fatalf("файл %s не был создан", outputFile)
 	}
 
-	// Удаление после теста
 	os.Remove(outputFile)
 }
 

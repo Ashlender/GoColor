@@ -15,12 +15,12 @@ type ConfigPalette struct {
 func LoadPaletteFromJSON(filename, targetName string) ([]ColorInfo, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		return nil, fmt.Errorf("не удалось прочитать %s: %v", filename, err)
+		return nil, fmt.Errorf("error while reading %s: %v", filename, err)
 	}
 
 	var palettes []ConfigPalette
 	if err := json.Unmarshal(data, &palettes); err != nil {
-		return nil, fmt.Errorf("ошибка парсинга JSON: %v", err)
+		return nil, fmt.Errorf("error while parsing JSON: %v", err)
 	}
 
 	for _, p := range palettes {
@@ -33,11 +33,11 @@ func LoadPaletteFromJSON(filename, targetName string) ([]ColorInfo, error) {
 				result = append(result, ColorInfo{R: c[0], G: c[1], B: c[2]})
 			}
 			if len(result) == 0 {
-				return nil, fmt.Errorf("палитра '%s' не содержит валидных цветов", targetName)
+				return nil, fmt.Errorf("current palette '%s' does not contain valid colors", targetName)
 			}
 			return result, nil
 		}
 	}
 
-	return nil, fmt.Errorf("палитра '%s' не найдена", targetName)
+	return nil, fmt.Errorf("palette '%s' not found", targetName)
 }

@@ -9,20 +9,25 @@ import (
 )
 
 func main() {
-	var count int
-	var mode, conf, baseColor, htmlOut string
 
-	flag.IntVar(&count, "count", 3, "Количество цветов в палитре (2–5)")
-	flag.StringVar(&mode, "mode", "rgb", "Режим генерации: rgb или hsv")
-	flag.StringVar(&conf, "conf", "", "Имя палитры из palettes.json (заменяет mode/count)")
-	flag.StringVar(&baseColor, "base", "", "Базовый цвет в формате R,G,B для RGB-режима")
-	flag.StringVar(&htmlOut, "html", "", "Имя HTML-файла для вывода палитры")
+	// Flags
+	var count int
+	var mode string
+	var conf string
+	var baseColor string
+	var htmlOut string
+
+	flag.IntVar(&count, "count", 3, " --colors in the palette [2–5]")
+	flag.StringVar(&mode, "mode", "rgb", " --generation mode (standard mode == rgb): [rgb/hsv]")
+	flag.StringVar(&conf, "conf", "", " --palette name from palettes.json [replaces mode/count]")
+	flag.StringVar(&baseColor, "base", "", " --base color in R,G,B format for [rgb] mode")
+	flag.StringVar(&htmlOut, "html", "", " --name of HTML file to output the palette")
 	flag.Parse()
 
 	if conf != "" {
 		colors, err := pkg.LoadPaletteFromJSON("palettes.json", conf)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Ошибка:", err)
+			fmt.Fprintln(os.Stderr, "Error:", err)
 			os.Exit(1)
 		}
 		printColors(colors)
@@ -31,7 +36,7 @@ func main() {
 	}
 
 	if count < 2 || count > 5 {
-		fmt.Fprintln(os.Stderr, "Ошибка: поддерживаются только значения count от 2 до 5")
+		fmt.Fprintln(os.Stderr, "Error: Only count values [2 - 5] are supported")
 		os.Exit(1)
 	}
 
@@ -43,7 +48,7 @@ func main() {
 	if baseColor != "" {
 		_, err := fmt.Sscanf(baseColor, "%d,%d,%d", &baseR, &baseG, &baseB)
 		if err != nil || baseR < 0 || baseR > 255 || baseG < 0 || baseG > 255 || baseB < 0 || baseB > 255 {
-			fmt.Fprintln(os.Stderr, "Ошибка: base содержит некорректные значения RGB")
+			fmt.Fprintln(os.Stderr, "Error: --base contains invalid [rgb] values")
 			os.Exit(1)
 		}
 		baseProvided = true
@@ -60,7 +65,7 @@ func main() {
 	case "hsv":
 		colors = pkg.PaletteRuleHSV(count)
 	default:
-		fmt.Fprintln(os.Stderr, "Ошибка: режим должен быть 'rgb' или 'hsv'")
+		fmt.Fprintln(os.Stderr, "Error: --mode must be [None] or [hsv]")
 		os.Exit(1)
 	}
 
@@ -68,6 +73,7 @@ func main() {
 	saveHTML(htmlOut, colors)
 }
 
+// Print function
 func printColors(colors []pkg.ColorInfo) {
 	for _, c := range colors {
 		fmt.Printf("\x1b[48;2;%d;%d;%dm", c.R, c.G, c.B)
@@ -78,12 +84,13 @@ func printColors(colors []pkg.ColorInfo) {
 	}
 }
 
+// Saving HTML-config
 func saveHTML(htmlOut string, colors []pkg.ColorInfo) {
 	if htmlOut != "" {
 		if err := pkg.SavePaletteToHTML(htmlOut, colors); err != nil {
-			fmt.Fprintln(os.Stderr, "Ошибка сохранения HTML:", err)
+			fmt.Fprintln(os.Stderr, "Error while saving HTML-config:", err)
 			os.Exit(1)
 		}
-		fmt.Println("HTML-файл сохранён:", htmlOut)
+		fmt.Println("HTML-config saved:", htmlOut)
 	}
 }

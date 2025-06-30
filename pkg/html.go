@@ -7,7 +7,7 @@ import (
 
 func SavePaletteToHTML(filename string, colors []ColorInfo) error {
 	html := "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Palette</title></head><body style='font-family:sans-serif'>"
-	html += "<h2>Сгенерированная палитра:</h2><div style='display:flex;'>"
+	html += "<h2>Generated palette:</h2><div style='display:flex;'>"
 
 	for _, c := range colors {
 		hex := fmt.Sprintf("#%02X%02X%02X", c.R, c.G, c.B)

@@ -20,6 +20,7 @@ func clamp(x int) int {
 	return x
 }
 
+// Generation based on UNIX time
 func PaletteGenerator() (r, g, b int) {
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(256), rand.Intn(256), rand.Intn(256)
@@ -49,6 +50,7 @@ func PaletteRuleRGB(r, g, b, count int) []ColorInfo {
 	return colors
 }
 
+// Generation based on UNIX time
 func PaletteRuleHSV(count int) []ColorInfo {
 	var colors []ColorInfo
 	rand.Seed(time.Now().UnixNano())
