@@ -17,18 +17,18 @@ func TestMainFunctionality(t *testing.T) {
 	// Generating a palette
 	colors := pkg.PaletteRuleRGB(r, g, b, numColors)
 	if len(colors) != numColors {
-		t.Fatalf("ожидалось %d цветов, получено %d", numColors, len(colors))
+		t.Fatalf("needed %d colors, got %d", numColors, len(colors))
 	}
 
 	// Saving HTML config
 	err := pkg.SavePaletteToHTML(outputFile, colors)
 	if err != nil {
-		t.Fatalf("ошибка при сохранении HTML: %v", err)
+		t.Fatalf("Error while saving HTML: %v", err)
 	}
 
 	// Checking file existence
 	if _, err := os.Stat(outputFile); os.IsNotExist(err) {
-		t.Fatalf("файл %s не был создан", outputFile)
+		t.Fatalf("file %s not exist", outputFile)
 	}
 
 	os.Remove(outputFile)
@@ -40,10 +40,10 @@ func TestLoadPaletteFromJSON(t *testing.T) {
 
 	colors, err := pkg.LoadPaletteFromJSON(paletteFile, name)
 	if err != nil {
-		t.Fatalf("ошибка загрузки палитры из JSON: %v", err)
+		t.Fatalf("Error JSON: %v", err)
 	}
 
 	if len(colors) == 0 {
-		t.Errorf("палитра %q пуста", name)
+		t.Errorf("palette %q empty", name)
 	}
 }
