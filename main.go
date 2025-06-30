@@ -24,46 +24,85 @@ func main() {
 	var count int
 	var mode string
 	var conf string
+	var baseColor string
+	var htmlOut string
 
 	flag.IntVar(&count, "count", 3, "Количество цветов в палитре (2–5)")
 	flag.StringVar(&mode, "mode", "rgb", "Режим генерации: rgb или hsv")
 	flag.StringVar(&conf, "conf", "", "Имя палитры из palettes.json (заменяет mode/count)")
+	flag.StringVar(&baseColor, "base", "", "Базовый цвет в формате R,G,B для RGB-режима")
+	flag.StringVar(&htmlOut, "html", "", "Имя HTML-файла для вывода палитры")
 	flag.Parse()
 
 	if conf != "" {
 		colors, err := loadPaletteFromJSON("palettes.json", conf)
 		if err != nil {
-			fmt.Println("Error:", err)
+			fmt.Fprintln(os.Stderr, "Ошибка:", err)
 			os.Exit(1)
 		}
 		for _, c := range colors {
 			printColorLine(c)
 		}
+		if htmlOut != "" {
+			if err := savePaletteToHTML(htmlOut, colors); err != nil {
+				fmt.Fprintln(os.Stderr, "Ошибка сохранения HTML:", err)
+				os.Exit(1)
+			}
+			fmt.Println("HTML-файл сохранён:", htmlOut)
+		}
 		return
 	}
 
 	if count < 2 || count > 5 {
-		fmt.Println("Ошибка: поддерживаются только значения count от 2 до 5")
+		fmt.Fprintln(os.Stderr, "Ошибка: поддерживаются только значения count от 2 до 5")
 		os.Exit(1)
 	}
 
 	mode = strings.ToLower(mode)
-
 	var colors []ColorInfo
+
+	baseProvided := false
+	var baseR, baseG, baseB int
+
+	if baseColor != "" {
+		parts := strings.Split(baseColor, ",")
+		if len(parts) != 3 {
+			fmt.Fprintln(os.Stderr, "Ошибка: base должен быть в формате R,G,B")
+			os.Exit(1)
+		}
+		_, err := fmt.Sscanf(baseColor, "%d,%d,%d", &baseR, &baseG, &baseB)
+		if err != nil || baseR < 0 || baseR > 255 || baseG < 0 || baseG > 255 || baseB < 0 || baseB > 255 {
+			fmt.Fprintln(os.Stderr, "Ошибка: base содержит некорректные значения RGB")
+			os.Exit(1)
+		}
+		baseProvided = true
+	}
 
 	switch mode {
 	case "rgb":
-		r, g, b := paletteGenerator()
-		colors = paletteRuleRGB(r, g, b, count)
+		if baseProvided {
+			colors = paletteRuleRGB(baseR, baseG, baseB, count)
+		} else {
+			r, g, b := paletteGenerator()
+			colors = paletteRuleRGB(r, g, b, count)
+		}
 	case "hsv":
 		colors = paletteRuleHSV(count)
 	default:
-		fmt.Println("Ошибка: режим должен быть 'rgb' или 'hsv'")
+		fmt.Fprintln(os.Stderr, "Ошибка: режим должен быть 'rgb' или 'hsv'")
 		os.Exit(1)
 	}
 
 	for _, c := range colors {
 		printColorLine(c)
+	}
+
+	if htmlOut != "" {
+		if err := savePaletteToHTML(htmlOut, colors); err != nil {
+			fmt.Fprintln(os.Stderr, "Ошибка сохранения HTML:", err)
+			os.Exit(1)
+		}
+		fmt.Println("HTML-файл сохранён:", htmlOut)
 	}
 }
 
@@ -86,6 +125,9 @@ func loadPaletteFromJSON(filename, targetName string) ([]ColorInfo, error) {
 					continue
 				}
 				result = append(result, ColorInfo{c[0], c[1], c[2]})
+			}
+			if len(result) == 0 {
+				return nil, fmt.Errorf("палитра '%s' не содержит валидных цветов", targetName)
 			}
 			return result, nil
 		}
@@ -138,10 +180,13 @@ func paletteRuleRGB(r, g, b, count int) []ColorInfo {
 
 func paletteRuleHSV(count int) []ColorInfo {
 	var colors []ColorInfo
+	rand.Seed(time.Now().UnixNano())
 
 	for i := 0; i < count; i++ {
 		h := float64(i) * (360.0 / float64(count))
-		r, g, b := HSVtoRGB(h, 1.0, 1.0)
+		s := 0.6 + rand.Float64()*0.4 // насыщенность от 0.6 до 1.0
+		v := 0.7 + rand.Float64()*0.3 // яркость от 0.7 до 1.0
+		r, g, b := HSVtoRGB(h, s, v)
 		colors = append(colors, ColorInfo{r, g, b})
 	}
 
@@ -186,4 +231,18 @@ func printColorLine(c ColorInfo) {
 		c.R, c.G, c.B, c.R, c.G, c.B)
 }
 
-//TODO fix HSV generation
+func savePaletteToHTML(filename string, colors []ColorInfo) error {
+	html := "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Palette</title></head><body style='font-family:sans-serif'>"
+	html += "<h2>Сгенерированная палитра:</h2><div style='display:flex;'>"
+
+	for _, c := range colors {
+		hex := fmt.Sprintf("#%02X%02X%02X", c.R, c.G, c.B)
+		block := fmt.Sprintf(
+			"<div style='width:120px;height:120px;background:%s;display:flex;align-items:center;justify-content:center;margin:4px;border:1px solid #000;'>"+
+				"<span style='color:#000;background:#fff;padding:2px;font-size:12px;'>%s</span></div>", hex, hex)
+		html += block
+	}
+
+	html += "</div></body></html>"
+	return os.WriteFile(filename, []byte(html), 0644)
+}
